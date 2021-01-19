@@ -32,6 +32,13 @@ interface IOptions {
   errorName?: string
 
   /**
+   * File permissions to write files as.
+   *
+   * Defaults to `0o644`
+   */
+  permissions?: number
+
+  /**
    * Whether to include `debug` level logs.
    *
    * Defaults to `false`
@@ -108,7 +115,7 @@ export const createFileSink: (
   }
 
   const createStream = (name: string) => {
-    const mode = 0o600
+    const mode = options.permissions ?? 0o644
 
     const path = join(options.directory, `${name}${FILE_EXT}`)
     const stream = createWriteStream(path, { mode, flags: 'a' })
