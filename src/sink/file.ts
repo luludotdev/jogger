@@ -103,6 +103,10 @@ interface IFileSink {
 export const createFileSink: (
   options: IOptions
 ) => Readonly<ISink & IFileSink> = options => {
+  if (!options) {
+    throw new Error('missing options parameter')
+  }
+
   if (typeof options.directory !== 'string' || options.directory === '') {
     throw new Error('file sink directory must be a non-empty string')
   }
@@ -126,7 +130,7 @@ export const createFileSink: (
   const rollOnLaunch = options.rollOnLaunch ?? false
 
   if (maxSize !== 0 && maxSize < 5) {
-    throw new Error(`maxSize must be greated than 5MB or 0 to disable`)
+    throw new Error(`maxSize must be greated than 5MB (or 0 to disable)`)
   }
 
   if (maxAge < 0) {
