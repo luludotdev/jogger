@@ -16,7 +16,7 @@ type WrappedLogFn = (
   ...fields: Array<Readonly<IField>>
 ) => void
 
-type Logger = Record<LogLevels, LogFn>
+export type Logger = Record<LogLevels, LogFn>
 
 interface ILoggerOptions {
   /**
