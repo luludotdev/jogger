@@ -49,7 +49,11 @@ export const createLogger: (
   }
 
   const fn: WrappedLogFn = (level, ...fields) => {
-    const defaultFields = [field('ts', Date.now()), field('level', level)]
+    const defaultFields = [
+      field('ts', Date.now()),
+      field('logger', options.name),
+      field('level', level),
+    ]
 
     const all = options.fields
       ? [...defaultFields, ...options.fields, ...fields]
