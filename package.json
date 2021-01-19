@@ -27,6 +27,9 @@
   "author": "Jack Baron <jackmbaron@gmail.com> (https://www.jackbaron.com)",
   "license": "MIT",
   "private": false,
+  "engines": {
+    "node": ">=10"
+  },
   "devDependencies": {
     "@types/node": "^14.14.21",
     "@vercel/ncc": "^0.27.0",
