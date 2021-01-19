@@ -28,7 +28,7 @@
   "license": "MIT",
   "private": false,
   "engines": {
-    "node": ">=10"
+    "node": "^10.17 || ^11.14 || >=12"
   },
   "devDependencies": {
     "@types/node": "^14.14.21",
