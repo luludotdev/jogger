@@ -60,6 +60,13 @@ interface IOptions {
   maxBackups?: number
 
   /**
+   * Roll old logfiles on application launch.
+   *
+   * Defaults to `false`
+   */
+  rollOnLaunch?: boolean
+
+  /**
    * Whether to use gzip compression on rotated log files.
    *
    * Defaults to `true`
@@ -85,6 +92,8 @@ export const createFileSink: (
   const maxSize = options.maxSize ?? 100
   const maxAge = options.maxAge ?? 0
   const maxBackups = options.maxBackups ?? 0
+
+  const rollOnLaunch = options.rollOnLaunch ?? false
 
   if (maxSize !== 0 && maxSize < 5) {
     throw new Error(`maxSize must be greated than 5MB or 0 to disable`)
@@ -121,17 +130,21 @@ export const createFileSink: (
       await _write(buffer)
 
       if (maxSize !== 0 && _stream.size > maxSize * 1024 ** 2) {
-        _stream.stream.close()
-
         await roll()
-        await cleanup()
-
-        _stream.stream = createWriteStream(path, { mode })
-        _stream.size = 0
       }
     }
 
-    const roll: () => Promise<void> = async () =>
+    const roll = async () => {
+      _stream.stream.close()
+
+      await _roll()
+      await cleanup()
+
+      _stream.stream = createWriteStream(path, { mode })
+      _stream.size = 0
+    }
+
+    const _roll: () => Promise<void> = async () =>
       new Promise((resolve, reject) => {
         const date = new Date()
           .toISOString()
@@ -195,7 +208,17 @@ export const createFileSink: (
       return new Date(`${a}T${b.replace(/-/g, ':')}Z`)
     }
 
-    void cleanup()
+    const init = async () => {
+      const release = await mutex.acquire()
+      try {
+        if (rollOnLaunch) await roll()
+        await cleanup()
+      } finally {
+        release()
+      }
+    }
+
+    void init()
 
     const _stream = {
       path,
