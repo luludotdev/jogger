@@ -138,11 +138,26 @@ export const createFileSink: (
   }
 
   const createStream = (name: string) => {
-    const mode = options.permissions ?? 0o644
+    const fileSize = () => {
+      try {
+        const { size } = statSync(path)
+        return size
+      } catch (error: unknown) {
+        if (
+          error instanceof Error &&
+          error.message.includes('no such file or directory')
+        ) {
+          return 0
+        }
 
+        throw error
+      }
+    }
+
+    const mode = options.permissions ?? 0o644
     const path = join(options.directory, `${name}${FILE_EXT}`)
     const stream = createWriteStream(path, { mode, flags: 'a' })
-    const { size } = statSync(path)
+    const size = fileSize()
 
     const _write: (buffer: Buffer) => Promise<void> = async buffer =>
       new Promise((resolve, reject) => {
