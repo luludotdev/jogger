@@ -40,6 +40,7 @@ export function field<T extends Primitive>(
 ): Readonly<IField>
 export function field(
   name: string,
+  field: Readonly<IField>,
   ...fields: Array<Readonly<IField>>
 ): Readonly<IField>
 export function field(name: string, ...values: unknown[]): Readonly<IField> {
