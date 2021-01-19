@@ -1,7 +1,7 @@
 {
   "name": "@lolpants/jogger",
   "version": "0.1.0",
-  "description": "Simple JSON logger",
+  "description": "Elegant JSON logging system",
   "main": "./lib/index.js",
   "module": "./esm/index.js",
   "types": "./lib/index.d.ts",
