@@ -69,3 +69,17 @@ export function field(name: string, ...values: unknown[]): Readonly<IField> {
 
   throw new Error(`field \`${name}\` has an unsupported value type`)
 }
+
+export const createField = (name: string) => {
+  function wrappedField<T extends Primitive>(value: T | T[]): Readonly<IField>
+  function wrappedField(
+    field: Readonly<IField>,
+    ...fields: Array<Readonly<IField>>
+  ): Readonly<IField>
+  function wrappedField(...values: unknown[]): Readonly<IField> {
+    // @ts-expect-error
+    return field(name, ...values)
+  }
+
+  return wrappedField
+}

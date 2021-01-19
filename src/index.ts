@@ -1,4 +1,4 @@
-export { field } from './field'
+export { createField, field } from './field'
 export type { IField } from './field'
 export { createLogger } from './logger'
 export type { Logger } from './logger'
