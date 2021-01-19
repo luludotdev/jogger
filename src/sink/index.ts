@@ -24,3 +24,4 @@ export function isSink(arg: unknown): arg is ISink {
 }
 
 export { consoleSink } from './console'
+export { createFileSink } from './file'

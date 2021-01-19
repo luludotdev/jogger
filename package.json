@@ -16,7 +16,7 @@
     "check": "yarn run compile --noEmit",
     "lint": "xo",
     "prebuild": "rimraf lib esm",
-    "build:cjs": "ncc build ./src/index.ts -o lib -m -e json-colorizer",
+    "build:cjs": "ncc build ./src/index.ts -o lib -m -e async-mutex -e globby -e json-colorizer",
     "build:esm": "yarn run compile --module ES6 --outDir esm",
     "build": "yarn run build:cjs && yarn run build:esm",
     "compile": "tsc",
@@ -34,6 +34,8 @@
     "xo": "^0.37.1"
   },
   "dependencies": {
+    "async-mutex": "^0.2.6",
+    "globby": "^11.0.2",
     "json-colorizer": "^2.2.2"
   }
 }
