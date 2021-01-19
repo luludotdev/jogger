@@ -67,6 +67,13 @@ interface IOptions {
   maxBackups?: number
 
   /**
+   * Roll logfiles on each new day. Note that days are always counted using UTC.
+   *
+   * Defaults to `false
+   */
+  rollEveryDay?: boolean
+
+  /**
    * Roll old logfiles on application launch.
    *
    * Defaults to `false`
@@ -100,6 +107,7 @@ export const createFileSink: (
   const maxAge = options.maxAge ?? 0
   const maxBackups = options.maxBackups ?? 0
 
+  const rollEveryDay = options.rollEveryDay ?? false
   const rollOnLaunch = options.rollOnLaunch ?? false
 
   if (maxSize !== 0 && maxSize < 5) {
@@ -136,9 +144,15 @@ export const createFileSink: (
     const write = async (buffer: Buffer) => {
       await _write(buffer)
 
-      if (maxSize !== 0 && _stream.size > maxSize * 1024 ** 2) {
-        await roll()
-      }
+      const previousLog = _stream.lastLog
+      _stream.lastLog = new Date()
+
+      const rollSize = maxSize !== 0 && _stream.size > maxSize * 1024 ** 2
+      const rollDay =
+        rollEveryDay &&
+        previousLog.getUTCDate() !== _stream.lastLog.getUTCDate()
+
+      if (rollSize || rollDay) await roll()
     }
 
     const roll = async () => {
@@ -232,6 +246,8 @@ export const createFileSink: (
       stream,
       size,
       write,
+
+      lastLog: new Date(),
     }
 
     return _stream
