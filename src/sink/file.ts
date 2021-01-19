@@ -6,6 +6,7 @@ import {
   statSync,
 } from 'fs'
 import globby from 'globby'
+import { sync as mkdirp } from 'mkdirp'
 import { join, parse, posix } from 'path'
 import { createGzip } from 'zlib'
 import type { ISink } from '.'
@@ -37,6 +38,13 @@ interface IOptions {
    * Defaults to `0o644`
    */
   permissions?: number
+
+  /**
+   * Directory permissions to create as (if required).
+   *
+   * Defaults to `0o755`
+   */
+  dirPermissions?: number
 
   /**
    * Whether to include `debug` level logs.
@@ -98,6 +106,9 @@ export const createFileSink: (
   if (typeof options.directory !== 'string' || options.directory === '') {
     throw new Error('file sink directory must be a non-empty string')
   }
+
+  const dirMode = options.dirPermissions ?? 0o755
+  mkdirp(options.directory, { mode: dirMode })
 
   if (typeof options.name !== 'string' || options.name === '') {
     throw new Error('file sink name must be a non-empty string')
