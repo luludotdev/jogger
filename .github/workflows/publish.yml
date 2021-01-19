@@ -1,12 +1,14 @@
 name: Node.js CI
-on: [push, pull_request]
+on:
+  release:
+    types: [published]
 
 jobs:
-  test:
+  publish:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [14.x]
 
     steps:
       - name: Checkout
@@ -25,3 +27,9 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Test
         run: yarn run test
+      - name: Version
+        run: yarn version --new-version "${GITHUB_REF:11}" --no-git-tag-version
+      - name: publish
+        run: yarn publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
