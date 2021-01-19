@@ -88,9 +88,13 @@ interface IOptions {
   compress?: boolean
 }
 
+interface IFileSink {
+  flush: () => Promise<void>
+}
+
 export const createFileSink: (
   options: IOptions
-) => Readonly<ISink> = options => {
+) => Readonly<ISink & IFileSink> = options => {
   if (typeof options.directory !== 'string' || options.directory === '') {
     throw new Error('file sink directory must be a non-empty string')
   }
@@ -284,6 +288,11 @@ export const createFileSink: (
     debug: async line => {
       if (debug === false) return
       await log(line, false)
+    },
+
+    flush: async () => {
+      const release = await mutex.acquire()
+      release()
     },
   })
 }
