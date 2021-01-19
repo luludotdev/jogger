@@ -23,5 +23,5 @@ export function isSink(arg: unknown): arg is ISink {
   return true
 }
 
-export { consoleSink } from './console'
+export { createConsoleSink } from './console'
 export { createFileSink } from './file'
