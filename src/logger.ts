@@ -19,8 +19,19 @@ type WrappedLogFn = (
 type Logger = Record<LogLevels, LogFn>
 
 interface ILoggerOptions {
+  /**
+   * Logger name
+   */
   name: string
+
+  /**
+   * Log sink(s)
+   */
   sink: Readonly<ISink> | [Readonly<ISink>, ...Array<Readonly<ISink>>]
+
+  /**
+   * Extra fields to include in all log entries
+   */
   fields?: Array<Readonly<IField>>
 }
 

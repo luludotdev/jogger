@@ -1,7 +1,10 @@
 import colorize from 'json-colorizer'
 import type { ISink } from '.'
 
-export const consoleSink: (debug?: boolean) => Readonly<ISink> = (
+/**
+ * @param debug Whether to include `debug` level logs, defaults to `false`
+ */
+export const createConsoleSink: (debug?: boolean) => Readonly<ISink> = (
   debug = false
 ) =>
   Object.freeze({
