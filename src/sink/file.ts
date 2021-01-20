@@ -108,14 +108,14 @@ export const createFileSink: (
   }
 
   if (typeof options.directory !== 'string' || options.directory === '') {
-    throw new Error('file sink directory must be a non-empty string')
+    throw new TypeError('file sink directory must be a non-empty string')
   }
 
   const dirMode = options.dirPermissions ?? 0o755
   mkdirp(options.directory, { mode: dirMode })
 
   if (typeof options.name !== 'string' || options.name === '') {
-    throw new Error('file sink name must be a non-empty string')
+    throw new TypeError('file sink name must be a non-empty string')
   }
 
   const mutex = new Mutex()

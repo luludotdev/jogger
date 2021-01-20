@@ -38,13 +38,17 @@ interface ILoggerOptions {
 export const createLogger: (
   options: ILoggerOptions
 ) => Readonly<Logger> = options => {
+  if (!options) {
+    throw new Error('missing options parameter')
+  }
+
   const sinks: ISink[] = Array.isArray(options.sink)
     ? options.sink
     : [options.sink]
 
   for (const sink of sinks) {
     if (isSink(sink) === false) {
-      throw new Error(`logger \`${options.name}\` has an invalid sink`)
+      throw new TypeError(`logger \`${options.name}\` has an invalid sink`)
     }
   }
 

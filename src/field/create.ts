@@ -21,8 +21,11 @@ export function field(
   ...fields: ReadonlyArray<Readonly<IField>>
 ): Readonly<IField>
 export function field(name: string, ...values: unknown[]): Readonly<IField> {
-  const value = values[0]
+  if (!name || typeof name !== 'string') {
+    throw new TypeError('`name` argument must be a non-empty string')
+  }
 
+  const value = values[0]
   if (values.length === 1 && isPrimitive(value)) {
     return Object.freeze({ $symbol, name, value })
   }
@@ -44,10 +47,14 @@ export function field(name: string, ...values: unknown[]): Readonly<IField> {
     return Object.freeze({ $symbol, name, value: fields })
   }
 
-  throw new Error(`field \`${name}\` has an unsupported value type`)
+  throw new TypeError(`field \`${name}\` has an unsupported value type`)
 }
 
 export const createField = (name: string) => {
+  if (!name || typeof name !== 'string') {
+    throw new TypeError('`name` argument must be a non-empty string')
+  }
+
   function wrappedField<T extends Primitive>(value: T | T[]): Readonly<IField>
   function wrappedField(
     field: Readonly<IField>,
