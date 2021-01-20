@@ -1,4 +1,4 @@
-import { field } from './field'
+import { field, serializeFields } from './field'
 import type { IField } from './field'
 import { isSink } from './sink'
 import type { ISink } from './sink'
@@ -73,19 +73,4 @@ export const createLogger: (
   }
 
   return Object.freeze(logger as Logger)
-}
-
-const serializeFields: (...fields: Array<Readonly<IField>>) => string = (
-  ...fields
-) => {
-  const object: Record<string, any> = {}
-  for (const field of fields) {
-    if (field.name in object) {
-      throw new Error(`duplicate field name: \`${field.name}\``)
-    }
-
-    object[field.name] = field.value
-  }
-
-  return JSON.stringify(object)
 }
