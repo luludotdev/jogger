@@ -35,6 +35,10 @@ interface ILoggerOptions {
   fields?: Array<Readonly<IField>>
 }
 
+/**
+ * Create a new Logger
+ * @param options Logger Options
+ */
 export const createLogger: (
   options: ILoggerOptions
 ) => Readonly<Logger> = options => {

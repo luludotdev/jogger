@@ -11,10 +11,19 @@ function isArrayOf<T>(arg: unknown[], fn: (x: unknown) => x is T): arg is T[] {
   return true
 }
 
+/**
+ * @param name Field name
+ * @param value Primitive value
+ */
 export function field<T extends Primitive>(
   name: string,
   value: T | T[]
 ): Readonly<IField>
+/**
+ * @param name Field name
+ * @param field Sub-field
+ * @param fields Extra sub-fields
+ */
 export function field(
   name: string,
   field: Readonly<IField>,
@@ -50,12 +59,23 @@ export function field(name: string, ...values: unknown[]): Readonly<IField> {
   throw new TypeError(`field \`${name}\` has an unsupported value type`)
 }
 
+/**
+ * Create a wrapped field
+ * @param name Field name
+ */
 export const createField = (name: string) => {
   if (!name || typeof name !== 'string') {
     throw new TypeError('`name` argument must be a non-empty string')
   }
 
+  /**
+   * @param value Primitive value
+   */
   function wrappedField<T extends Primitive>(value: T | T[]): Readonly<IField>
+  /**
+   * @param field Sub-field
+   * @param fields Extra sub-fields
+   */
   function wrappedField(
     field: Readonly<IField>,
     ...fields: Array<Readonly<IField>>

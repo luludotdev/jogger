@@ -100,6 +100,10 @@ interface IFileSink {
   flush: () => Promise<void>
 }
 
+/**
+ * Create a new File Sink
+ * @param options Sink Options
+ */
 export const createFileSink: (
   options: IOptions
 ) => Readonly<ISink & IFileSink> = options => {
