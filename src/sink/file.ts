@@ -9,7 +9,7 @@ import globby from 'globby'
 import { sync as mkdirp } from 'mkdirp'
 import { join, parse, posix } from 'path'
 import { createGzip } from 'zlib'
-import type { ISink } from '.'
+import type { ISink } from './sink'
 
 const FILE_EXT = '.log'
 const GZIP_EXT = '.gz'

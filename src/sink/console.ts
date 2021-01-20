@@ -1,5 +1,5 @@
 import colorize from 'json-colorizer'
-import type { ISink } from '.'
+import type { ISink } from './sink'
 
 /**
  * @param debug Whether to include `debug` level logs, defaults to `false`
