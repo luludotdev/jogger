@@ -97,7 +97,15 @@ interface IOptions {
 }
 
 interface IFileSink {
+  /**
+   * Roll logfiles manually.
+   * @param file File stream. If error logs are sent to the same file then `err` means the same as `out`.
+   */
   roll: (file?: 'out' | 'err') => Promise<void>
+
+  /**
+   * Flush all pending writes.
+   */
   flush: () => Promise<void>
 }
 
