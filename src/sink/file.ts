@@ -97,6 +97,7 @@ interface IOptions {
 }
 
 interface IFileSink {
+  roll: (file?: 'out' | 'err') => Promise<void>
   flush: () => Promise<void>
 }
 
@@ -284,6 +285,7 @@ export const createFileSink: (
       stream,
       size,
       write,
+      roll,
 
       lastLog: new Date(),
     }
@@ -322,6 +324,16 @@ export const createFileSink: (
     debug: async line => {
       if (debug === false) return
       await log(line, false)
+    },
+
+    roll: async (file = 'out') => {
+      const release = await mutex.acquire()
+      try {
+        const stream = file === 'err' ? errorStream : logStream
+        await stream.roll()
+      } finally {
+        release()
+      }
     },
 
     flush: async () => {
