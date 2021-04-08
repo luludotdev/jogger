@@ -1,3 +1,3 @@
-export { field, createField } from './create'
-export type { IField } from './field'
-export { serializeFields } from './serialize'
+export { field, createField } from './create.js'
+export type { IField } from './field.js'
+export { serializeFields } from './serialize.js'

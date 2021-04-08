@@ -1,4 +1,4 @@
-import type { IField } from './field'
+import type { IField } from './field.js'
 
 export const serializeFields: (
   ...fields: ReadonlyArray<Readonly<IField>>

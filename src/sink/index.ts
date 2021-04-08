@@ -1,4 +1,4 @@
-export { createConsoleSink } from './console'
-export { createFileSink } from './file'
-export { isSink } from './sink'
-export type { ISink } from './sink'
+export { createConsoleSink } from './console.js'
+export { createFileSink } from './file.js'
+export { isSink } from './sink.js'
+export type { ISink } from './sink.js'

@@ -6,10 +6,10 @@ import {
   statSync,
 } from 'fs'
 import globby from 'globby'
-import { sync as mkdirp } from 'mkdirp'
+import mkdirp from 'mkdirp'
 import { join, parse, posix } from 'path'
 import { createGzip } from 'zlib'
-import type { ISink } from './sink'
+import type { ISink } from './sink.js'
 
 const FILE_EXT = '.log'
 const GZIP_EXT = '.gz'
@@ -125,7 +125,7 @@ export const createFileSink: (
   }
 
   const dirMode = options.dirPermissions ?? 0o755
-  mkdirp(options.directory, { mode: dirMode })
+  mkdirp.sync(options.directory, { mode: dirMode })
 
   if (typeof options.name !== 'string' || options.name === '') {
     throw new TypeError('file sink name must be a non-empty string')

@@ -1,4 +1,4 @@
-import { Primitive } from './primitive'
+import { Primitive } from './primitive.js'
 
 export type FieldTypes = Primitive | Primitive[]
 export interface IField {
