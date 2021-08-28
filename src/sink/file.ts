@@ -143,7 +143,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
     const rollOnLaunch = options.rollOnLaunch ?? false
 
     if (maxSize !== 0 && maxSize < 5) {
-      throw new Error(`maxSize must be greated than 5MB (or 0 to disable)`)
+      throw new Error(`maxSize must be greater than 5MB (or 0 to disable)`)
     }
 
     if (maxAge < 0) {
