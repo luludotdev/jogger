@@ -14,7 +14,7 @@ export function isSink(arg: unknown): arg is ISink {
   if ('err' in arg === false) return false
   if ('debug' in arg === false) return false
 
-  // @ts-expect-error
+  // @ts-expect-error Known to have sink interface methods
   const sink: Record<keyof ISink, unknown> = arg
   if (typeof sink.out !== 'function') return false
   if (typeof sink.err !== 'function') return false

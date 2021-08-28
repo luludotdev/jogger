@@ -13,6 +13,6 @@ export function isField(arg: unknown): arg is IField {
   if (arg === null) return false
   if ('$symbol' in arg === false) return false
 
-  // @ts-expect-error
+  // @ts-expect-error Already known that $symbol exists
   return arg.$symbol === $symbol
 }

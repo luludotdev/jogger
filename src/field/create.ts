@@ -76,7 +76,7 @@ export const createField = (name: string) => {
     ...fields: Array<Readonly<IField>>
   ): Readonly<IField>
   function wrappedField(...values: unknown[]): Readonly<IField> {
-    // @ts-expect-error
+    // @ts-expect-error Passthrough values to field()
     return field(name, ...values)
   }
 
