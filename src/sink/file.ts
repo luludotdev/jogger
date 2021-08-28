@@ -87,10 +87,12 @@ interface Options {
 
   /**
    * Whether to use gzip compression on rotated log files.
+   * If a number is passed that will set the gzip compression level,
+   * otherwise defaults to whatever Node.js has configured as default.
    *
    * Defaults to `true`
    */
-  compress?: boolean
+  compress?: boolean | number
 }
 
 interface FileSink {
@@ -111,6 +113,7 @@ interface FileSink {
  * @param options Sink Options
  */
 export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
+  // eslint-disable-next-line complexity
   options => {
     if (!options) {
       throw new Error('missing options parameter')
@@ -137,6 +140,16 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
 
     const rollEveryDay = options.rollEveryDay ?? false
     const rollOnLaunch = options.rollOnLaunch ?? false
+
+    if (typeof compress === 'number') {
+      if (Number.isInteger(compress) === false) {
+        throw new TypeError('compress must be an integer')
+      }
+
+      if (compress < 1 || compress > 9) {
+        throw new Error('compress must be between 1 and 9')
+      }
+    }
 
     if (maxSize !== 0 && maxSize < 5) {
       throw new Error(`maxSize must be greater than 5MB (or 0 to disable)`)
@@ -227,7 +240,8 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
             .on('error', error => reject(error))
 
           if (compress) {
-            inStream.pipe(createGzip()).pipe(outStream)
+            const level = typeof compress === 'number' ? compress : undefined
+            inStream.pipe(createGzip({ level })).pipe(outStream)
           } else {
             inStream.pipe(outStream)
           }
