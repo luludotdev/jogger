@@ -1,5 +1,5 @@
 import { $symbol, isField } from './field.js'
-import type { FieldTypes, IField } from './field.js'
+import type { IField } from './field.js'
 import { isPrimitive } from './primitive.js'
 import type { Primitive } from './primitive.js'
 
@@ -44,15 +44,10 @@ export function field(name: string, ...values: unknown[]): Readonly<IField> {
   }
 
   if (isArrayOf(values, isField)) {
-    // eslint-disable-next-line unicorn/no-array-reduce
-    const fields = values.reduce<
-      Record<string, FieldTypes | Record<string, FieldTypes>>
-    >((acc, curr) => {
-      // @ts-expect-error
-      acc[curr.name] = curr.value
-      return acc
-    }, {})
+    type FieldEntry = [name: IField['name'], value: IField['value']]
+    const entries: FieldEntry[] = values.map(({ name, value }) => [name, value])
 
+    const fields = Object.fromEntries(entries) as IField['value']
     return Object.freeze({ $symbol, name, value: fields })
   }
 

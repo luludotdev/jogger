@@ -1,14 +1,15 @@
 import { Mutex } from 'async-mutex'
+import { globby } from 'globby'
+import mkdirp from 'mkdirp'
+import { Buffer } from 'node:buffer'
 import {
   createReadStream,
   createWriteStream,
   promises as fs,
   statSync,
-} from 'fs'
-import globby from 'globby'
-import mkdirp from 'mkdirp'
-import { join, parse, posix } from 'path'
-import { createGzip } from 'zlib'
+} from 'node:fs'
+import { join, parse, posix } from 'node:path'
+import { createGzip } from 'node:zlib'
 import type { ISink } from './sink.js'
 
 const FILE_EXT = '.log'

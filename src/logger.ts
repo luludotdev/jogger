@@ -39,46 +39,45 @@ interface ILoggerOptions {
  * Create a new Logger
  * @param options Logger Options
  */
-export const createLogger: (
-  options: ILoggerOptions
-) => Readonly<Logger> = options => {
-  if (!options) {
-    throw new Error('missing options parameter')
-  }
-
-  const sinks: ISink[] = Array.isArray(options.sink)
-    ? options.sink
-    : [options.sink]
-
-  for (const sink of sinks) {
-    if (isSink(sink) === false) {
-      throw new TypeError(`logger \`${options.name}\` has an invalid sink`)
+export const createLogger: (options: ILoggerOptions) => Readonly<Logger> =
+  options => {
+    if (!options) {
+      throw new Error('missing options parameter')
     }
-  }
 
-  const fn: WrappedLogFn = (level, ...fields) => {
-    const defaultFields = [
-      field('ts', Date.now()),
-      field('logger', options.name),
-      field('level', level),
-    ]
+    const sinks: ISink[] = Array.isArray(options.sink)
+      ? options.sink
+      : [options.sink]
 
-    const all = options.fields
-      ? [...defaultFields, ...options.fields, ...fields]
-      : [...defaultFields, ...fields]
-
-    const serialized = serializeFields(...all)
     for (const sink of sinks) {
-      if (level === 'debug') sink.debug(serialized)
-      else if (level === 'error') sink.err(serialized)
-      else sink.out(serialized)
+      if (isSink(sink) === false) {
+        throw new TypeError(`logger \`${options.name}\` has an invalid sink`)
+      }
     }
-  }
 
-  const logger: Partial<Logger> = {}
-  for (const level of logLevels) {
-    logger[level] = (...args) => fn(level, ...args)
-  }
+    const fn: WrappedLogFn = (level, ...fields) => {
+      const defaultFields = [
+        field('ts', Date.now()),
+        field('logger', options.name),
+        field('level', level),
+      ]
 
-  return Object.freeze(logger as Logger)
-}
+      const all = options.fields
+        ? [...defaultFields, ...options.fields, ...fields]
+        : [...defaultFields, ...fields]
+
+      const serialized = serializeFields(...all)
+      for (const sink of sinks) {
+        if (level === 'debug') sink.debug(serialized)
+        else if (level === 'error') sink.err(serialized)
+        else sink.out(serialized)
+      }
+    }
+
+    const logger: Partial<Logger> = {}
+    for (const level of logLevels) {
+      logger[level] = (...args) => fn(level, ...args)
+    }
+
+    return Object.freeze(logger as Logger)
+  }

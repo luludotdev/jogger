@@ -1,4 +1,5 @@
 import colorize from 'json-colorizer'
+import { stderr, stdout } from 'node:process'
 import type { ISink } from './sink.js'
 
 /**
@@ -9,24 +10,24 @@ export const createConsoleSink: (debug?: boolean) => Readonly<ISink> = (
 ) =>
   Object.freeze({
     out: log => {
-      const out = process.stdout.isTTY ? colorize(log) : log
+      const out = stdout.isTTY ? colorize(log) : log
 
-      process.stdout.write(out)
-      process.stdout.write('\n')
+      stdout.write(out)
+      stdout.write('\n')
     },
 
     err: log => {
-      const out = process.stderr.isTTY ? colorize(log) : log
+      const out = stderr.isTTY ? colorize(log) : log
 
-      process.stderr.write(out)
-      process.stderr.write('\n')
+      stderr.write(out)
+      stderr.write('\n')
     },
 
     debug: log => {
       if (debug === false) return
-      const out = process.stdout.isTTY ? colorize(log) : log
+      const out = stdout.isTTY ? colorize(log) : log
 
-      process.stdout.write(out)
-      process.stdout.write('\n')
+      stdout.write(out)
+      stdout.write('\n')
     },
   })
