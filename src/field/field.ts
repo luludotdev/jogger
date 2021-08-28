@@ -1,14 +1,14 @@
 import { Primitive } from './primitive.js'
 
 export type FieldTypes = Primitive | Primitive[]
-export interface IField {
+export interface Field {
   $symbol: symbol
   name: string
   value: FieldTypes | Record<string, FieldTypes | Record<string, FieldTypes>>
 }
 
 export const $symbol = Symbol('@jogger/field')
-export function isField(arg: unknown): arg is IField {
+export function isField(arg: unknown): arg is Field {
   if (typeof arg !== 'object') return false
   if (arg === null) return false
   if ('$symbol' in arg === false) return false

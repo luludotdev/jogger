@@ -1,11 +1,11 @@
 import colorize from 'json-colorizer'
 import { stderr, stdout } from 'node:process'
-import type { ISink } from './sink.js'
+import type { Sink } from './sink.js'
 
 /**
  * @param debug Whether to include `debug` level logs, defaults to `false`
  */
-export const createConsoleSink: (debug?: boolean) => Readonly<ISink> = (
+export const createConsoleSink: (debug?: boolean) => Readonly<Sink> = (
   debug = false
 ) =>
   Object.freeze({

@@ -10,12 +10,12 @@ import {
 } from 'node:fs'
 import { join, parse, posix } from 'node:path'
 import { createGzip } from 'node:zlib'
-import type { ISink } from './sink.js'
+import type { Sink } from './sink.js'
 
 const FILE_EXT = '.log'
 const GZIP_EXT = '.gz'
 
-interface IOptions {
+interface Options {
   /**
    * Directory to write logfiles to
    */
@@ -97,7 +97,7 @@ interface IOptions {
   compress?: boolean
 }
 
-interface IFileSink {
+interface FileSink {
   /**
    * Roll logfiles manually.
    * @param file File stream. If error logs are sent to the same file then `err` means the same as `out`.
@@ -114,243 +114,242 @@ interface IFileSink {
  * Create a new File Sink
  * @param options Sink Options
  */
-export const createFileSink: (
-  options: IOptions
-) => Readonly<ISink & IFileSink> = options => {
-  if (!options) {
-    throw new Error('missing options parameter')
-  }
-
-  if (typeof options.directory !== 'string' || options.directory === '') {
-    throw new TypeError('file sink directory must be a non-empty string')
-  }
-
-  const dirMode = options.dirPermissions ?? 0o755
-  mkdirp.sync(options.directory, { mode: dirMode })
-
-  if (typeof options.name !== 'string' || options.name === '') {
-    throw new TypeError('file sink name must be a non-empty string')
-  }
-
-  const mutex = new Mutex()
-  const debug = options.debug ?? false
-  const compress = options.compress ?? true
-
-  const maxSize = options.maxSize ?? 100
-  const maxAge = options.maxAge ?? 0
-  const maxBackups = options.maxBackups ?? 0
-
-  const rollEveryDay = options.rollEveryDay ?? false
-  const rollOnLaunch = options.rollOnLaunch ?? false
-
-  if (maxSize !== 0 && maxSize < 5) {
-    throw new Error(`maxSize must be greated than 5MB (or 0 to disable)`)
-  }
-
-  if (maxAge < 0) {
-    throw new Error('maxAge must be greater than 0')
-  }
-
-  if (maxBackups < 0) {
-    throw new Error('maxBackups must be greater than 0')
-  }
-
-  const createStream = (name: string) => {
-    const fileSize = () => {
-      try {
-        const { size } = statSync(path)
-        return size
-      } catch (error: unknown) {
-        if (
-          error instanceof Error &&
-          error.message.includes('no such file or directory')
-        ) {
-          return 0
-        }
-
-        throw error
-      }
+export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
+  options => {
+    if (!options) {
+      throw new Error('missing options parameter')
     }
 
-    const mode = options.permissions ?? 0o644
-    const path = join(options.directory, `${name}${FILE_EXT}`)
-    const stream = createWriteStream(path, { mode, flags: 'a' })
-    const size = fileSize()
+    if (typeof options.directory !== 'string' || options.directory === '') {
+      throw new TypeError('file sink directory must be a non-empty string')
+    }
 
-    const _write: (buffer: Buffer) => Promise<void> = async buffer =>
-      new Promise((resolve, reject) => {
-        _stream.stream.write(buffer, error => {
-          if (error) {
-            reject(error)
+    const dirMode = options.dirPermissions ?? 0o755
+    mkdirp.sync(options.directory, { mode: dirMode })
+
+    if (typeof options.name !== 'string' || options.name === '') {
+      throw new TypeError('file sink name must be a non-empty string')
+    }
+
+    const mutex = new Mutex()
+    const debug = options.debug ?? false
+    const compress = options.compress ?? true
+
+    const maxSize = options.maxSize ?? 100
+    const maxAge = options.maxAge ?? 0
+    const maxBackups = options.maxBackups ?? 0
+
+    const rollEveryDay = options.rollEveryDay ?? false
+    const rollOnLaunch = options.rollOnLaunch ?? false
+
+    if (maxSize !== 0 && maxSize < 5) {
+      throw new Error(`maxSize must be greated than 5MB (or 0 to disable)`)
+    }
+
+    if (maxAge < 0) {
+      throw new Error('maxAge must be greater than 0')
+    }
+
+    if (maxBackups < 0) {
+      throw new Error('maxBackups must be greater than 0')
+    }
+
+    const createStream = (name: string) => {
+      const fileSize = () => {
+        try {
+          const { size } = statSync(path)
+          return size
+        } catch (error: unknown) {
+          if (
+            error instanceof Error &&
+            error.message.includes('no such file or directory')
+          ) {
+            return 0
+          }
+
+          throw error
+        }
+      }
+
+      const mode = options.permissions ?? 0o644
+      const path = join(options.directory, `${name}${FILE_EXT}`)
+      const stream = createWriteStream(path, { mode, flags: 'a' })
+      const size = fileSize()
+
+      const _write: (buffer: Buffer) => Promise<void> = async buffer =>
+        new Promise((resolve, reject) => {
+          _stream.stream.write(buffer, error => {
+            if (error) {
+              reject(error)
+            } else {
+              _stream.size += buffer.byteLength
+              resolve()
+            }
+          })
+        })
+
+      const write = async (buffer: Buffer) => {
+        await _write(buffer)
+
+        const previousLog = _stream.lastLog
+        _stream.lastLog = new Date()
+
+        const rollSize = maxSize !== 0 && _stream.size > maxSize * 1024 ** 2
+        const rollDay =
+          rollEveryDay &&
+          previousLog.getUTCDate() !== _stream.lastLog.getUTCDate()
+
+        if (rollSize || rollDay) await roll()
+      }
+
+      const roll = async () => {
+        _stream.stream.close()
+
+        await _roll()
+        await cleanup()
+
+        _stream.stream = createWriteStream(path, { mode })
+        _stream.size = 0
+      }
+
+      const _roll: () => Promise<void> = async () =>
+        new Promise((resolve, reject) => {
+          const date = new Date()
+            .toISOString()
+            .replace('Z', '')
+            .replace(/:/g, '-')
+
+          let fileName = `${name}-${date}${FILE_EXT}`
+          if (compress) fileName += GZIP_EXT
+          const newPath = join(options.directory, fileName)
+
+          const inStream = createReadStream(path)
+          const outStream = createWriteStream(newPath, { mode })
+
+          inStream
+            .on('close', () => resolve())
+            .on('error', error => reject(error))
+
+          if (compress) {
+            inStream.pipe(createGzip()).pipe(outStream)
           } else {
-            _stream.size += buffer.byteLength
-            resolve()
+            inStream.pipe(outStream)
           }
         })
-      })
 
-    const write = async (buffer: Buffer) => {
-      await _write(buffer)
+      const cleanup = async () => {
+        const now = new Date()
+        const dir = posix.normalize(options.directory.replace(/\\/g, '/'))
+        const glob = posix.join(dir, `${name}-*`)
+        const files = await globby(glob)
 
-      const previousLog = _stream.lastLog
-      _stream.lastLog = new Date()
+        const mapped = files
+          .map(file => ({ file, ts: parseDate(file) }))
+          .sort((a, b) => a.ts.getTime() - b.ts.getTime())
 
-      const rollSize = maxSize !== 0 && _stream.size > maxSize * 1024 ** 2
-      const rollDay =
-        rollEveryDay &&
-        previousLog.getUTCDate() !== _stream.lastLog.getUTCDate()
+        const toRemove: typeof mapped = []
 
-      if (rollSize || rollDay) await roll()
-    }
-
-    const roll = async () => {
-      _stream.stream.close()
-
-      await _roll()
-      await cleanup()
-
-      _stream.stream = createWriteStream(path, { mode })
-      _stream.size = 0
-    }
-
-    const _roll: () => Promise<void> = async () =>
-      new Promise((resolve, reject) => {
-        const date = new Date()
-          .toISOString()
-          .replace('Z', '')
-          .replace(/:/g, '-')
-
-        let fileName = `${name}-${date}${FILE_EXT}`
-        if (compress) fileName += GZIP_EXT
-        const newPath = join(options.directory, fileName)
-
-        const inStream = createReadStream(path)
-        const outStream = createWriteStream(newPath, { mode })
-
-        inStream
-          .on('close', () => resolve())
-          .on('error', error => reject(error))
-
-        if (compress) {
-          inStream.pipe(createGzip()).pipe(outStream)
-        } else {
-          inStream.pipe(outStream)
+        if (maxBackups > 0) {
+          toRemove.push(...mapped.splice(0, mapped.length - maxBackups))
         }
-      })
 
-    const cleanup = async () => {
-      const now = new Date()
-      const dir = posix.normalize(options.directory.replace(/\\/g, '/'))
-      const glob = posix.join(dir, `${name}-*`)
-      const files = await globby(glob)
-
-      const mapped = files
-        .map(file => ({ file, ts: parseDate(file) }))
-        .sort((a, b) => a.ts.getTime() - b.ts.getTime())
-
-      const toRemove: typeof mapped = []
-
-      if (maxBackups > 0) {
-        toRemove.push(...mapped.splice(0, mapped.length - maxBackups))
-      }
-
-      if (maxAge > 0) {
-        for (const log of mapped) {
-          if (isNDaysOld(log.ts, now, maxAge)) {
-            toRemove.push(log)
+        if (maxAge > 0) {
+          for (const log of mapped) {
+            if (isNDaysOld(log.ts, now, maxAge)) {
+              toRemove.push(log)
+            }
           }
         }
+
+        const jobs = toRemove.map(async ({ file }) => fs.unlink(file))
+        await Promise.all(jobs)
       }
 
-      const jobs = toRemove.map(async ({ file }) => fs.unlink(file))
-      await Promise.all(jobs)
+      const parseDate: (filename: string) => Date = filename => {
+        const { base } = parse(filename)
+        const tsString = base
+          .replace(`${name}-`, '')
+          .replace(FILE_EXT, '')
+          .replace(GZIP_EXT, '')
+
+        const [a, b] = tsString.split('T')
+        return new Date(`${a}T${b.replace(/-/g, ':')}Z`)
+      }
+
+      const init = async () => {
+        const release = await mutex.acquire()
+        try {
+          if (rollOnLaunch) await roll()
+          await cleanup()
+        } finally {
+          release()
+        }
+      }
+
+      void init()
+
+      const _stream = {
+        path,
+        stream,
+        size,
+        write,
+        roll,
+
+        lastLog: new Date(),
+      }
+
+      return _stream
     }
 
-    const parseDate: (filename: string) => Date = filename => {
-      const { base } = parse(filename)
-      const tsString = base
-        .replace(`${name}-`, '')
-        .replace(FILE_EXT, '')
-        .replace(GZIP_EXT, '')
+    const logStream = createStream(options.name)
+    const errorStream =
+      options.errorName === undefined
+        ? logStream
+        : createStream(options.errorName)
 
-      const [a, b] = tsString.split('T')
-      return new Date(`${a}T${b.replace(/-/g, ':')}Z`)
-    }
-
-    const init = async () => {
+    const log = async (line: string, error: boolean) => {
       const release = await mutex.acquire()
+
       try {
-        if (rollOnLaunch) await roll()
-        await cleanup()
+        const data = Buffer.from(`${line}\n`)
+        const stream = error ? errorStream : logStream
+
+        await stream.write(data)
       } finally {
         release()
       }
     }
 
-    void init()
+    return Object.freeze({
+      out: async line => {
+        await log(line, false)
+      },
 
-    const _stream = {
-      path,
-      stream,
-      size,
-      write,
-      roll,
+      err: async line => {
+        await log(line, true)
+      },
 
-      lastLog: new Date(),
-    }
+      debug: async line => {
+        if (debug === false) return
+        await log(line, false)
+      },
 
-    return _stream
-  }
+      roll: async (file = 'out') => {
+        const release = await mutex.acquire()
+        try {
+          const stream = file === 'err' ? errorStream : logStream
+          await stream.roll()
+        } finally {
+          release()
+        }
+      },
 
-  const logStream = createStream(options.name)
-  const errorStream =
-    options.errorName === undefined
-      ? logStream
-      : createStream(options.errorName)
-
-  const log = async (line: string, error: boolean) => {
-    const release = await mutex.acquire()
-
-    try {
-      const data = Buffer.from(`${line}\n`)
-      const stream = error ? errorStream : logStream
-
-      await stream.write(data)
-    } finally {
-      release()
-    }
-  }
-
-  return Object.freeze({
-    out: async line => {
-      await log(line, false)
-    },
-
-    err: async line => {
-      await log(line, true)
-    },
-
-    debug: async line => {
-      if (debug === false) return
-      await log(line, false)
-    },
-
-    roll: async (file = 'out') => {
-      const release = await mutex.acquire()
-      try {
-        const stream = file === 'err' ? errorStream : logStream
-        await stream.roll()
-      } finally {
+      flush: async () => {
+        const release = await mutex.acquire()
         release()
-      }
-    },
-
-    flush: async () => {
-      const release = await mutex.acquire()
-      release()
-    },
-  })
-}
+      },
+    })
+  }
 
 const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (
   target,

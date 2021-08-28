@@ -1,6 +1,6 @@
 export { createField, field } from './field/index.js'
-export type { IField } from './field/index.js'
+export type { Field } from './field/index.js'
 export { createLogger } from './logger.js'
 export type { Logger } from './logger.js'
 export { createConsoleSink, createFileSink } from './sink/index.js'
-export type { ISink } from './sink/index.js'
+export type { Sink } from './sink/index.js'

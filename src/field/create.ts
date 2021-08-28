@@ -1,5 +1,5 @@
 import { $symbol, isField } from './field.js'
-import type { IField } from './field.js'
+import type { Field } from './field.js'
 import { isPrimitive } from './primitive.js'
 import type { Primitive } from './primitive.js'
 
@@ -18,7 +18,7 @@ function isArrayOf<T>(arg: unknown[], fn: (x: unknown) => x is T): arg is T[] {
 export function field<T extends Primitive>(
   name: string,
   value: T | T[]
-): Readonly<IField>
+): Readonly<Field>
 /**
  * @param name Field name
  * @param field Sub-field
@@ -26,10 +26,10 @@ export function field<T extends Primitive>(
  */
 export function field(
   name: string,
-  field: Readonly<IField>,
-  ...fields: ReadonlyArray<Readonly<IField>>
-): Readonly<IField>
-export function field(name: string, ...values: unknown[]): Readonly<IField> {
+  field: Readonly<Field>,
+  ...fields: ReadonlyArray<Readonly<Field>>
+): Readonly<Field>
+export function field(name: string, ...values: unknown[]): Readonly<Field> {
   if (!name || typeof name !== 'string') {
     throw new TypeError('`name` argument must be a non-empty string')
   }
@@ -44,10 +44,10 @@ export function field(name: string, ...values: unknown[]): Readonly<IField> {
   }
 
   if (isArrayOf(values, isField)) {
-    type FieldEntry = [name: IField['name'], value: IField['value']]
+    type FieldEntry = [name: Field['name'], value: Field['value']]
     const entries: FieldEntry[] = values.map(({ name, value }) => [name, value])
 
-    const fields = Object.fromEntries(entries) as IField['value']
+    const fields = Object.fromEntries(entries) as Field['value']
     return Object.freeze({ $symbol, name, value: fields })
   }
 
@@ -66,16 +66,16 @@ export const createField = (name: string) => {
   /**
    * @param value Primitive value
    */
-  function wrappedField<T extends Primitive>(value: T | T[]): Readonly<IField>
+  function wrappedField<T extends Primitive>(value: T | T[]): Readonly<Field>
   /**
    * @param field Sub-field
    * @param fields Extra sub-fields
    */
   function wrappedField(
-    field: Readonly<IField>,
-    ...fields: Array<Readonly<IField>>
-  ): Readonly<IField>
-  function wrappedField(...values: unknown[]): Readonly<IField> {
+    field: Readonly<Field>,
+    ...fields: Array<Readonly<Field>>
+  ): Readonly<Field>
+  function wrappedField(...values: unknown[]): Readonly<Field> {
     // @ts-expect-error Passthrough values to field()
     return field(name, ...values)
   }
