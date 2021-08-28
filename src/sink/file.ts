@@ -2,12 +2,8 @@ import { Mutex } from 'async-mutex'
 import { globby } from 'globby'
 import mkdirp from 'mkdirp'
 import { Buffer } from 'node:buffer'
-import {
-  createReadStream,
-  createWriteStream,
-  promises as fs,
-  statSync,
-} from 'node:fs'
+import { createReadStream, createWriteStream, statSync } from 'node:fs'
+import { unlink } from 'node:fs/promises'
 import { join, parse, posix } from 'node:path'
 import { createGzip } from 'node:zlib'
 import type { Sink } from './sink.js'
@@ -261,7 +257,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
           }
         }
 
-        const jobs = toRemove.map(async ({ file }) => fs.unlink(file))
+        const jobs = toRemove.map(async ({ file }) => unlink(file))
         await Promise.all(jobs)
       }
 
