@@ -27,7 +27,7 @@
   "license": "MIT",
   "private": false,
   "engines": {
-    "node": ">=12"
+    "node": ">=12.20"
   },
   "devDependencies": {
     "@types/mkdirp": "^1.0.2",
