@@ -12,5 +12,13 @@ export const serializeFields: (
     object[field.name] = field.value
   }
 
-  return JSON.stringify(object)
+  return JSON.stringify(object, (_, value: unknown) => {
+    switch (typeof value) {
+      case 'bigint':
+        return `${value}n`
+
+      default:
+        return value
+    }
+  })
 }
