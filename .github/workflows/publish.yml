@@ -3,21 +3,20 @@ on:
   release:
     types: [published]
 
+env:
+  NODE_VERSION: 16.x
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           cache: yarn
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
       - name: Install packages
         run: yarn install --frozen-lockfile
