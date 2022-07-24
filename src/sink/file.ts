@@ -6,7 +6,7 @@ import { createReadStream, createWriteStream, statSync } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { join, parse, posix } from 'node:path'
 import { createGzip } from 'node:zlib'
-import type { Sink } from './sink.js'
+import { type Sink } from './sink.js'
 
 const FILE_EXT = '.log'
 const GZIP_EXT = '.gz'
@@ -330,21 +330,21 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
       }
     }
 
-    return Object.freeze({
-      out: async line => {
+    const sink: Sink & FileSink = {
+      async out(line) {
         await log(line, false)
       },
 
-      err: async line => {
+      async err(line) {
         await log(line, true)
       },
 
-      debug: async line => {
+      async debug(line) {
         if (debug === false) return
         await log(line, false)
       },
 
-      roll: async (file = 'out') => {
+      async roll(file = 'out') {
         const release = await mutex.acquire()
         try {
           const stream = file === 'err' ? errorStream : logStream
@@ -354,11 +354,13 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
         }
       },
 
-      flush: async () => {
+      async flush() {
         const release = await mutex.acquire()
         release()
       },
-    })
+    }
+
+    return Object.freeze(sink)
   }
 
 const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (

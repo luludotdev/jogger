@@ -1,4 +1,5 @@
-export type Primitive = string | number | BigInt | boolean | null
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Primitive = string | number | bigint | boolean | null
 
 export function isPrimitive(arg: unknown): arg is Primitive {
   if (typeof arg === 'string') return true
