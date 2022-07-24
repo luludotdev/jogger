@@ -2,7 +2,7 @@ import { type Field, field, serializeFields } from './field/index.js'
 import { isSink, type Sink } from './sink/index.js'
 
 type LogLevels = typeof logLevels[number]
-const logLevels = ['info', 'debug', 'warn', 'error'] as const
+const logLevels = ['info', 'debug', 'trace', 'warn', 'error'] as const
 
 type LogFn = (field: Readonly<Field>, ...fields: Array<Readonly<Field>>) => void
 
@@ -62,9 +62,26 @@ export const createLogger: (options: Options) => Readonly<Logger> = options => {
 
     const serialized = serializeFields(...all)
     for (const sink of sinks) {
-      if (level === 'debug') sink.debug(serialized)
-      else if (level === 'error') sink.err(serialized)
-      else sink.out(serialized)
+      switch (level) {
+        case 'debug': {
+          sink.debug(serialized)
+          break
+        }
+
+        case 'trace': {
+          sink.trace(serialized)
+          break
+        }
+
+        case 'error': {
+          sink.err(serialized)
+          break
+        }
+
+        default:
+          sink.out(serialized)
+          break
+      }
     }
   }
 

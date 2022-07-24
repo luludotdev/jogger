@@ -4,6 +4,7 @@ export interface Sink {
   out: PrintFn
   err: PrintFn
   debug: PrintFn
+  trace: PrintFn
 }
 
 export function isSink(arg: unknown): arg is Sink {

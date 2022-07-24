@@ -51,6 +51,13 @@ interface Options {
   debug?: boolean
 
   /**
+   * Whether to include `trace` level logs.
+   *
+   * Defaults to `false`
+   */
+  trace?: boolean
+
+  /**
    * Maximum file size in MB of the log file before it gets rotated. Set to `0` to disable rotation.
    *
    * Defaults to `100`
@@ -132,6 +139,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
 
     const mutex = new Mutex()
     const debug = options.debug ?? false
+    const trace = options.trace ?? false
     const compress = options.compress ?? true
 
     const maxSize = options.maxSize ?? 100
@@ -341,6 +349,11 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
 
       async debug(line) {
         if (debug === false) return
+        await log(line, false)
+      },
+
+      async trace(line) {
+        if (trace === false) return
         await log(line, false)
       },
 
