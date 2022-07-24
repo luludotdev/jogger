@@ -1,6 +1,7 @@
 {
   "name": "@lolpants/jogger",
   "version": "0.6.0",
+  "packageManager": "yarn@3.2.2",
   "description": "Elegant JSON logging system",
   "type": "module",
   "exports": "./lib/index.js",
@@ -25,7 +26,6 @@
   "repository": "git@github.com:lolPants/jogger.git",
   "author": "Jack Baron <jackmbaron@gmail.com> (https://www.jackbaron.com)",
   "license": "MIT",
-  "private": false,
   "engines": {
     "node": ">=12.20"
   },
