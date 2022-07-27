@@ -193,43 +193,43 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
       const stream = createWriteStream(path, { mode, flags: 'a' })
       const size = fileSize()
 
-      const _write: (buffer: Buffer) => Promise<void> = async buffer =>
+      const writePromise: (buffer: Buffer) => Promise<void> = async buffer =>
         new Promise((resolve, reject) => {
-          _stream.stream.write(buffer, error => {
+          logStream.stream.write(buffer, error => {
             if (error) {
               reject(error)
             } else {
-              _stream.size += buffer.byteLength
+              logStream.size += buffer.byteLength
               resolve()
             }
           })
         })
 
       const write = async (buffer: Buffer) => {
-        await _write(buffer)
+        await writePromise(buffer)
 
-        const previousLog = _stream.lastLog
-        _stream.lastLog = new Date()
+        const previousLog = logStream.lastLog
+        logStream.lastLog = new Date()
 
-        const rollSize = maxSize !== 0 && _stream.size > maxSize * 1024 ** 2
+        const rollSize = maxSize !== 0 && logStream.size > maxSize * 1024 ** 2
         const rollDay =
           rollEveryDay &&
-          previousLog.getUTCDate() !== _stream.lastLog.getUTCDate()
+          previousLog.getUTCDate() !== logStream.lastLog.getUTCDate()
 
         if (rollSize || rollDay) await roll()
       }
 
       const roll = async () => {
-        _stream.stream.close()
+        logStream.stream.close()
 
-        await _roll()
+        await rollInternal()
         await cleanup()
 
-        _stream.stream = createWriteStream(path, { mode })
-        _stream.size = 0
+        logStream.stream = createWriteStream(path, { mode })
+        logStream.size = 0
       }
 
-      const _roll: () => Promise<void> = async () =>
+      const rollInternal: () => Promise<void> = async () =>
         new Promise((resolve, reject) => {
           const date = new Date()
             .toISOString()
@@ -306,7 +306,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
 
       void init()
 
-      const _stream = {
+      const logStream = {
         path,
         stream,
         size,
@@ -316,7 +316,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
         lastLog: new Date(),
       }
 
-      return _stream
+      return logStream
     }
 
     const logStream = createStream(options.name)
