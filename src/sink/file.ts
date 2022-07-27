@@ -188,6 +188,22 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
         }
       }
 
+      const lastModified = () => {
+        try {
+          const { mtime } = statSync(path)
+          return mtime
+        } catch (error: unknown) {
+          if (
+            error instanceof Error &&
+            error.message.includes('no such file or directory')
+          ) {
+            return new Date()
+          }
+
+          throw error
+        }
+      }
+
       const mode = options.permissions ?? 0o644
       const path = join(options.directory, `${name}${FILE_EXT}`)
       const stream = createWriteStream(path, { mode, flags: 'a' })
@@ -313,7 +329,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
         write,
         roll,
 
-        lastLog: new Date(),
+        lastLog: lastModified(),
       }
 
       return logStream
