@@ -222,8 +222,6 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
         })
 
       const write = async (buffer: Buffer) => {
-        await writePromise(buffer)
-
         const previousLog = logStream.lastLog
         logStream.lastLog = new Date()
 
@@ -233,6 +231,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
           previousLog.getUTCDate() !== logStream.lastLog.getUTCDate()
 
         if (rollSize || rollDay) await roll()
+        await writePromise(buffer)
       }
 
       const roll = async () => {
