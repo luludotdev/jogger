@@ -2,7 +2,6 @@
 ![Node.js CI](https://github.com/lolPants/jogger/workflows/Node.js%20CI/badge.svg?branch=master)
 [![NPM version](https://img.shields.io/npm/v/@lolpants/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@lolpants/jogger)
 [![NPM downloads](https://img.shields.io/npm/dt/@lolpants/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@lolpants/jogger)
-[![Dependencies](https://img.shields.io/david/lolpants/jogger.svg?maxAge=3600)](https://david-dm.org/lolpants/jogger)
 > Elegant JSON logging system inspired by [Zap](https://github.com/uber-go/zap)
 
 ## ⚠️ Warning
@@ -21,13 +20,13 @@ Loggers only accept fields as arguments. Fields are strongly typed and can be an
 All public methods are documented using JSDoc, your IDE should provide you with enough context. Refer to the example below for a basic setup.
 
 ## 🚀 Example
-Note that by default `debug` level logs are discarded. You must manually enable them in each sink's config.
+Note that by default `debug` and `trace` level logs are discarded. You must manually enable them in each sink's config.
 
 ```ts
 import { createConsoleSink, createLogger, field } from '@lolpants/jogger'
 
 // Enable debug log level
-const consoleSink = createConsoleSink(true)
+const consoleSink = createConsoleSink({ debug: true })
 const logger = createLogger({
   name: 'app',
   sink: [consoleSink],
