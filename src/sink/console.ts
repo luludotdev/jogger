@@ -2,6 +2,14 @@ import colorize from 'json-colorizer'
 import { stderr, stdout } from 'node:process'
 import { type Sink } from './sink.js'
 
+const writeLine = (line: string, error = false) => {
+  const out = stdout.isTTY ? colorize(line) : line
+  const stream = error ? stderr : stdout
+
+  stream.write(out)
+  stream.write('\n')
+}
+
 interface Options {
   /**
    * Whether to include `debug` level logs.
@@ -30,33 +38,21 @@ export const createConsoleSink: (
 
   const sink: Sink = {
     out(log) {
-      const out = stdout.isTTY ? colorize(log) : log
-
-      stdout.write(out)
-      stdout.write('\n')
+      writeLine(log)
     },
 
     err(log) {
-      const out = stderr.isTTY ? colorize(log) : log
-
-      stderr.write(out)
-      stderr.write('\n')
+      writeLine(log, true)
     },
 
     debug(log) {
       if (debug === false) return
-      const out = stdout.isTTY ? colorize(log) : log
-
-      stdout.write(out)
-      stdout.write('\n')
+      writeLine(log)
     },
 
     trace(log) {
       if (trace === false) return
-      const out = stdout.isTTY ? colorize(log) : log
-
-      stdout.write(out)
-      stdout.write('\n')
+      writeLine(log)
     },
   }
 
