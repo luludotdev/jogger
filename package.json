@@ -4,11 +4,12 @@
   "packageManager": "yarn@3.2.2",
   "description": "Elegant JSON logging system",
   "type": "module",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -19,8 +20,8 @@
   "scripts": {
     "build": "tsup",
     "check": "tsc --noEmit",
-    "lint": "prettier --check . && eslint src --ext mjs,js,ts",
-    "format": "prettier --write . && eslint src --ext mjs,js,ts --fix",
+    "lint": "prettier --check . && eslint src --ext ts",
+    "format": "prettier --write . && eslint src --ext ts --fix",
     "fmt": "yarn run format",
     "test": "yarn run check && yarn run lint",
     "prepack": "yarn run test && yarn run build"
