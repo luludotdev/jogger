@@ -19,13 +19,11 @@ export function field<T extends Primitive>(
 ): Readonly<Field>
 /**
  * @param name - Field name
- * @param field - Sub-field
- * @param fields - Extra sub-fields
+ * @param fields - Fields
  */
 export function field(
   name: string,
-  field: Readonly<Field>,
-  ...fields: readonly Readonly<Field>[]
+  ...fields: readonly [Readonly<Field>, ...(readonly Readonly<Field>[])]
 ): Readonly<Field>
 export function field(name: string, ...values: unknown[]): Readonly<Field> {
   if (!name || typeof name !== 'string') {
@@ -67,12 +65,10 @@ export const createField = (name: string) => {
    */
   function wrappedField<T extends Primitive>(value: T | T[]): Readonly<Field>
   /**
-   * @param field - Sub-field
-   * @param fields - Extra sub-fields
+   * @param fields - Fields
    */
   function wrappedField(
-    field: Readonly<Field>,
-    ...fields: Readonly<Field>[]
+    ...fields: readonly [Readonly<Field>, ...(readonly Readonly<Field>[])]
   ): Readonly<Field>
   function wrappedField(...values: unknown[]): Readonly<Field> {
     // @ts-expect-error Passthrough values to field()
