@@ -71,7 +71,7 @@ export const createLogger: (options: Options) => Logger = options => {
         }
 
         case 'error': {
-          sink.err(serialized)
+          sink.error(serialized)
           break
         }
 

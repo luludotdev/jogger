@@ -409,7 +409,7 @@ export const createFileSink: (options: Options) => Readonly<FileSink> & Sink =
         await log(line, false)
       },
 
-      async err(line) {
+      async error(line) {
         await log(line, true)
       },
 

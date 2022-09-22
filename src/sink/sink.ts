@@ -2,7 +2,7 @@
 type PrintFn = (log: string) => void
 
 type SinkMethod = typeof sinkMethods[number]
-const sinkMethods = ['out', 'err', 'debug', 'trace'] as const
+const sinkMethods = ['out', 'error', 'debug', 'trace'] as const
 
 export type Sink = Readonly<Record<SinkMethod, PrintFn>>
 export function isSink(arg: unknown): arg is Sink {

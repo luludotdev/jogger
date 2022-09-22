@@ -40,7 +40,7 @@ export const createConsoleSink: (options?: Options) => Sink = options => {
       writeLine(log)
     },
 
-    err(log) {
+    error(log) {
       writeLine(log, true)
     },
 
