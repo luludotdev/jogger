@@ -1,7 +1,7 @@
 {
   "name": "@lolpants/jogger",
   "version": "0.7.1",
-  "packageManager": "yarn@3.2.2",
+  "packageManager": "yarn@3.2.3",
   "description": "Elegant JSON logging system",
   "type": "module",
   "main": "./dist/index.js",
