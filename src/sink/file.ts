@@ -27,7 +27,7 @@ const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (
 const FILE_EXT = '.log'
 const GZIP_EXT = '.gz'
 
-interface Options {
+export interface Options {
   /**
    * Directory to write logfiles to
    */

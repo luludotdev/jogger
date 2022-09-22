@@ -10,7 +10,7 @@ const writeLine = (line: string, error = false) => {
   stream.write('\n')
 }
 
-interface Options {
+export interface Options {
   /**
    * Whether to include `debug` level logs.
    *
