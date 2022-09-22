@@ -1,7 +1,7 @@
-import { type Field } from './field.js'
+import type { Field } from './field.js'
 
 export const serializeFields: (
-  ...fields: ReadonlyArray<Readonly<Field>>
+  ...fields: readonly Readonly<Field>[]
 ) => string = (...fields) => {
   const object: Record<string, any> = {}
   for (const field of fields) {

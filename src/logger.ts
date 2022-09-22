@@ -4,12 +4,8 @@ import { isSink, type Sink } from './sink/index.js'
 type LogLevels = typeof logLevels[number]
 const logLevels = ['info', 'debug', 'trace', 'warn', 'error'] as const
 
-type LogFn = (field: Readonly<Field>, ...fields: Array<Readonly<Field>>) => void
-
-type WrappedLogFn = (
-  level: LogLevels,
-  ...fields: Array<Readonly<Field>>
-) => void
+type LogFn = (field: Readonly<Field>, ...fields: Readonly<Field>[]) => void
+type WrappedLogFn = (level: LogLevels, ...fields: Readonly<Field>[]) => void
 
 export type Logger = Record<LogLevels, LogFn>
 
@@ -22,17 +18,18 @@ interface Options {
   /**
    * Log sink(s)
    */
-  sink: Readonly<Sink> | [Readonly<Sink>, ...Array<Readonly<Sink>>]
+  sink: Readonly<Sink> | [Readonly<Sink>, ...Readonly<Sink>[]]
 
   /**
    * Extra fields to include in all log entries
    */
-  fields?: Array<Readonly<Field>>
+  fields?: Readonly<Field>[]
 }
 
 /**
  * Create a new Logger
- * @param options Logger Options
+ *
+ * @param options - Logger Options
  */
 export const createLogger: (options: Options) => Readonly<Logger> = options => {
   if (!options) {

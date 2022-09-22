@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type Primitive = string | number | bigint | boolean | null
+/* eslint-disable sonarjs/prefer-single-boolean-return */
+export type Primitive = bigint | boolean | number | string | null
 
 export function isPrimitive(arg: unknown): arg is Primitive {
   if (typeof arg === 'string') return true

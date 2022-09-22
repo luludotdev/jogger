@@ -1,12 +1,28 @@
-import { Mutex } from 'async-mutex'
-import { globby } from 'globby'
-import mkdirp from 'mkdirp'
 import { Buffer } from 'node:buffer'
-import { createReadStream, createWriteStream, statSync } from 'node:fs'
+import {
+  type WriteStream,
+  createReadStream,
+  createWriteStream,
+  statSync,
+} from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { join, parse, posix } from 'node:path'
 import { createGzip } from 'node:zlib'
-import { type Sink } from './sink.js'
+import { Mutex } from 'async-mutex'
+import { globby } from 'globby'
+import mkdirp from 'mkdirp'
+import type { Sink } from './sink.js'
+
+const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (
+  target,
+  now,
+  days,
+) => {
+  const millis = 1_000 * 60 * 60 * 24 * days
+  const x = now.getTime() - millis
+
+  return x > target.getTime()
+}
 
 const FILE_EXT = '.log'
 const GZIP_EXT = '.gz'
@@ -81,7 +97,7 @@ interface Options {
   /**
    * Roll logfiles on each new day. Note that days are always counted using UTC.
    *
-   * Defaults to `false
+   * Defaults to `false`
    */
   rollEveryDay?: boolean
 
@@ -105,21 +121,23 @@ interface Options {
 interface FileSink {
   /**
    * Roll logfiles manually.
-   * @param file File stream. If error logs are sent to the same file then `err` means the same as `out`.
+   *
+   * @param file - File stream. If error logs are sent to the same file then `err` means the same as `out`.
    */
-  roll: (file?: 'out' | 'err') => Promise<void>
+  roll(file?: 'err' | 'out'): Promise<void>
 
   /**
    * Flush all pending writes.
    */
-  flush: () => Promise<void>
+  flush(): Promise<void>
 }
 
 /**
  * Create a new File Sink
- * @param options Sink Options
+ *
+ * @param options - Sink Options
  */
-export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
+export const createFileSink: (options: Options) => Readonly<FileSink & Sink> =
   // eslint-disable-next-line complexity
   options => {
     if (!options) {
@@ -171,7 +189,26 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
       throw new Error('maxBackups must be greater than 0')
     }
 
-    const createStream = (name: string) => {
+    interface InternalLogStream {
+      path: string
+      stream: WriteStream
+      size: number
+      lastLog: Date
+
+      write(buffer: Buffer): Promise<void>
+      roll(): Promise<void>
+
+      // INTERNAL
+      writePromise(buffer: Buffer): Promise<void>
+      init(): Promise<void>
+    }
+
+    type LogStream = Omit<InternalLogStream, 'init' | 'writePromise'>
+
+    const createStream: (name: string) => Readonly<LogStream> = name => {
+      const mode = options.permissions ?? 0o644
+      const path = join(options.directory, `${name}${FILE_EXT}`)
+
       const fileSize = () => {
         try {
           const { size } = statSync(path)
@@ -204,52 +241,30 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
         }
       }
 
-      const mode = options.permissions ?? 0o644
-      const path = join(options.directory, `${name}${FILE_EXT}`)
+      const parseDate: (filename: string) => Date = filename => {
+        const { base } = parse(filename)
+        const tsString = base
+          .replace(`${name}-`, '')
+          .replace(FILE_EXT, '')
+          .replace(GZIP_EXT, '')
+
+        const [a, b] = tsString.split('T')
+        if (!a || !b) {
+          throw new Error('failed to parse date')
+        }
+
+        return new Date(`${a}T${b.replaceAll('-', ':')}Z`)
+      }
+
       const stream = createWriteStream(path, { mode, flags: 'a' })
       const size = fileSize()
-
-      const writePromise: (buffer: Buffer) => Promise<void> = async buffer =>
-        new Promise((resolve, reject) => {
-          logStream.stream.write(buffer, error => {
-            if (error) {
-              reject(error)
-            } else {
-              logStream.size += buffer.byteLength
-              resolve()
-            }
-          })
-        })
-
-      const write = async (buffer: Buffer) => {
-        const previousLog = logStream.lastLog
-        logStream.lastLog = new Date()
-
-        const rollSize = maxSize !== 0 && logStream.size > maxSize * 1024 ** 2
-        const rollDay =
-          rollEveryDay &&
-          previousLog.getUTCDate() !== logStream.lastLog.getUTCDate()
-
-        if (rollSize || rollDay) await roll()
-        await writePromise(buffer)
-      }
-
-      const roll = async () => {
-        logStream.stream.close()
-
-        await rollInternal()
-        await cleanup()
-
-        logStream.stream = createWriteStream(path, { mode })
-        logStream.size = 0
-      }
 
       const rollInternal: () => Promise<void> = async () =>
         new Promise((resolve, reject) => {
           const date = new Date()
             .toISOString()
             .replace('Z', '')
-            .replace(/:/g, '-')
+            .replaceAll(':', '-')
 
           let fileName = `${name}-${date}${FILE_EXT}`
           if (compress) fileName += GZIP_EXT
@@ -272,12 +287,29 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
 
       const cleanup = async () => {
         const now = new Date()
-        const dir = posix.normalize(options.directory.replace(/\\/g, '/'))
+        const dir = posix.normalize(options.directory.replaceAll('\\', '/'))
         const glob = posix.join(dir, `${name}-*`)
         const files = await globby(glob)
 
+        interface File {
+          file: string
+          ts: Date
+        }
+
         const mapped = files
-          .map(file => ({ file, ts: parseDate(file) }))
+          .map(file => {
+            try {
+              const mapped: File = {
+                file,
+                ts: parseDate(file),
+              }
+
+              return mapped
+            } catch {
+              return undefined
+            }
+          })
+          .filter((file): file is File => file !== undefined)
           .sort((a, b) => a.ts.getTime() - b.ts.getTime())
 
         const toRemove: typeof mapped = []
@@ -298,39 +330,58 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
         await Promise.all(jobs)
       }
 
-      const parseDate: (filename: string) => Date = filename => {
-        const { base } = parse(filename)
-        const tsString = base
-          .replace(`${name}-`, '')
-          .replace(FILE_EXT, '')
-          .replace(GZIP_EXT, '')
-
-        const [a, b] = tsString.split('T')
-        return new Date(`${a}T${b.replace(/-/g, ':')}Z`)
-      }
-
-      const init = async () => {
-        const release = await mutex.acquire()
-        try {
-          if (rollOnLaunch) await roll()
-          await cleanup()
-        } finally {
-          release()
-        }
-      }
-
-      void init()
-
-      const logStream = {
+      const logStream: InternalLogStream = {
         path,
         stream,
         size,
-        write,
-        roll,
-
         lastLog: lastModified(),
+
+        async init() {
+          const release = await mutex.acquire()
+          try {
+            if (rollOnLaunch) await this.roll()
+            await cleanup()
+          } finally {
+            release()
+          }
+        },
+
+        async writePromise(buffer) {
+          return new Promise((resolve, reject) => {
+            // eslint-disable-next-line promise/prefer-await-to-callbacks
+            this.stream.write(buffer, error =>
+              error ? reject(error) : resolve(),
+            )
+          })
+        },
+
+        async write(buffer) {
+          const previousLog = this.lastLog
+          this.lastLog = new Date()
+
+          const rollSize = maxSize !== 0 && this.size > maxSize * 1_024 ** 2
+          const rollDay =
+            rollEveryDay &&
+            previousLog.getUTCDate() !== this.lastLog.getUTCDate()
+
+          if (rollSize || rollDay) await this.roll()
+
+          await this.writePromise(buffer)
+          this.size += buffer.byteLength
+        },
+
+        async roll() {
+          this.stream.close()
+
+          await rollInternal()
+          await cleanup()
+
+          logStream.stream = createWriteStream(path, { mode })
+          logStream.size = 0
+        },
       }
 
+      void logStream.init()
       return logStream
     }
 
@@ -353,7 +404,7 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
       }
     }
 
-    const sink: Sink & FileSink = {
+    const sink: FileSink & Sink = {
       async out(line) {
         await log(line, false)
       },
@@ -390,14 +441,3 @@ export const createFileSink: (options: Options) => Readonly<Sink & FileSink> =
 
     return Object.freeze(sink)
   }
-
-const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (
-  target,
-  now,
-  days
-) => {
-  const millis = 1000 * 60 * 60 * 24 * days
-  const x = now.getTime() - millis
-
-  return x > target.getTime()
-}

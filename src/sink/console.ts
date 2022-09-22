@@ -1,6 +1,6 @@
-import colorize from 'json-colorizer'
 import { stderr, stdout } from 'node:process'
-import { type Sink } from './sink.js'
+import colorize from 'json-colorizer'
+import type { Sink } from './sink.js'
 
 const writeLine = (line: string, error = false) => {
   const out = stdout.isTTY ? colorize(line) : line
@@ -28,10 +28,11 @@ interface Options {
 
 /**
  * Create a new Console Sink
- * @param options Sink Options
+ *
+ * @param options - Sink Options
  */
 export const createConsoleSink: (
-  options?: Options
+  options?: Options,
 ) => Readonly<Sink> = options => {
   const debug = options?.debug ?? false
   const trace = options?.trace ?? false

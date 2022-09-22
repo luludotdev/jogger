@@ -10,22 +10,22 @@ function isArrayOf<T>(arg: unknown[], fn: (x: unknown) => x is T): arg is T[] {
 }
 
 /**
- * @param name Field name
- * @param value Primitive value
+ * @param name - Field name
+ * @param value - Primitive value
  */
 export function field<T extends Primitive>(
   name: string,
-  value: T | T[]
+  value: T | T[],
 ): Readonly<Field>
 /**
- * @param name Field name
- * @param field Sub-field
- * @param fields Extra sub-fields
+ * @param name - Field name
+ * @param field - Sub-field
+ * @param fields - Extra sub-fields
  */
 export function field(
   name: string,
   field: Readonly<Field>,
-  ...fields: ReadonlyArray<Readonly<Field>>
+  ...fields: readonly Readonly<Field>[]
 ): Readonly<Field>
 export function field(name: string, ...values: unknown[]): Readonly<Field> {
   if (!name || typeof name !== 'string') {
@@ -54,7 +54,8 @@ export function field(name: string, ...values: unknown[]): Readonly<Field> {
 
 /**
  * Create a wrapped field
- * @param name Field name
+ *
+ * @param name - Field name
  */
 export const createField = (name: string) => {
   if (!name || typeof name !== 'string') {
@@ -62,16 +63,16 @@ export const createField = (name: string) => {
   }
 
   /**
-   * @param value Primitive value
+   * @param value - Primitive value
    */
   function wrappedField<T extends Primitive>(value: T | T[]): Readonly<Field>
   /**
-   * @param field Sub-field
-   * @param fields Extra sub-fields
+   * @param field - Sub-field
+   * @param fields - Extra sub-fields
    */
   function wrappedField(
     field: Readonly<Field>,
-    ...fields: Array<Readonly<Field>>
+    ...fields: Readonly<Field>[]
   ): Readonly<Field>
   function wrappedField(...values: unknown[]): Readonly<Field> {
     // @ts-expect-error Passthrough values to field()
