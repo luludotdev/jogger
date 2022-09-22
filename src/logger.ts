@@ -4,7 +4,7 @@ import { isSink, type Sink } from './sink/index.js'
 type LogLevels = typeof logLevels[number]
 const logLevels = ['info', 'debug', 'trace', 'warn', 'error'] as const
 
-type LogFn = (field: Field, ...fields: Field[]) => void
+type LogFn = (...fields: readonly [Field, ...(readonly Field[])]) => void
 type WrappedLogFn = (level: LogLevels, ...fields: Field[]) => void
 
 export type Logger = Readonly<Record<LogLevels, LogFn>>
