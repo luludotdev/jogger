@@ -13,19 +13,16 @@ function isArrayOf<T>(arg: unknown[], fn: (x: unknown) => x is T): arg is T[] {
  * @param name - Field name
  * @param value - Primitive value
  */
-export function field<T extends Primitive>(
-  name: string,
-  value: T | T[],
-): Readonly<Field>
+export function field<T extends Primitive>(name: string, value: T | T[]): Field
 /**
  * @param name - Field name
  * @param fields - Fields
  */
 export function field(
   name: string,
-  ...fields: readonly [Readonly<Field>, ...(readonly Readonly<Field>[])]
-): Readonly<Field>
-export function field(name: string, ...values: unknown[]): Readonly<Field> {
+  ...fields: readonly [Field, ...(readonly Field[])]
+): Field
+export function field(name: string, ...values: unknown[]): Field {
   if (!name || typeof name !== 'string') {
     throw new TypeError('`name` argument must be a non-empty string')
   }
@@ -63,14 +60,14 @@ export const createField = (name: string) => {
   /**
    * @param value - Primitive value
    */
-  function wrappedField<T extends Primitive>(value: T | T[]): Readonly<Field>
+  function wrappedField<T extends Primitive>(value: T | T[]): Field
   /**
    * @param fields - Fields
    */
   function wrappedField(
-    ...fields: readonly [Readonly<Field>, ...(readonly Readonly<Field>[])]
-  ): Readonly<Field>
-  function wrappedField(...values: unknown[]): Readonly<Field> {
+    ...fields: readonly [Field, ...(readonly Field[])]
+  ): Field
+  function wrappedField(...values: unknown[]): Field {
     // @ts-expect-error Passthrough values to field()
     return field(name, ...values)
   }

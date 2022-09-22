@@ -4,10 +4,10 @@ import { isSink, type Sink } from './sink/index.js'
 type LogLevels = typeof logLevels[number]
 const logLevels = ['info', 'debug', 'trace', 'warn', 'error'] as const
 
-type LogFn = (field: Readonly<Field>, ...fields: Readonly<Field>[]) => void
-type WrappedLogFn = (level: LogLevels, ...fields: Readonly<Field>[]) => void
+type LogFn = (field: Field, ...fields: Field[]) => void
+type WrappedLogFn = (level: LogLevels, ...fields: Field[]) => void
 
-export type Logger = Record<LogLevels, LogFn>
+export type Logger = Readonly<Record<LogLevels, LogFn>>
 
 interface Options {
   /**
@@ -18,12 +18,12 @@ interface Options {
   /**
    * Log sink(s)
    */
-  sink: Readonly<Sink> | [Readonly<Sink>, ...Readonly<Sink>[]]
+  sink: Sink | [Sink, ...Sink[]]
 
   /**
    * Extra fields to include in all log entries
    */
-  fields?: Readonly<Field>[]
+  fields?: Field[]
 }
 
 /**
@@ -31,7 +31,7 @@ interface Options {
  *
  * @param options - Logger Options
  */
-export const createLogger: (options: Options) => Readonly<Logger> = options => {
+export const createLogger: (options: Options) => Logger = options => {
   if (!options) {
     throw new Error('missing options parameter')
   }
@@ -82,10 +82,11 @@ export const createLogger: (options: Options) => Readonly<Logger> = options => {
     }
   }
 
-  const logger: Partial<Logger> = {}
-  for (const level of logLevels) {
-    logger[level] = (...args) => fn(level, ...args)
-  }
+  const entries = logLevels.map(level => {
+    const logFn = (...fields: readonly Field[]) => fn(level, ...fields)
+    return [level, logFn]
+  })
 
+  const logger = Object.fromEntries(entries) as Logger
   return Object.freeze(logger as Logger)
 }

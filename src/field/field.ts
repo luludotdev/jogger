@@ -2,9 +2,11 @@ import type { Primitive } from './primitive.js'
 
 export type FieldTypes = Primitive | Primitive[]
 export interface Field {
-  $symbol: symbol
-  name: string
-  value: FieldTypes | Record<string, FieldTypes | Record<string, FieldTypes>>
+  readonly $symbol: symbol
+  readonly name: string
+  readonly value:
+    | FieldTypes
+    | Record<string, FieldTypes | Record<string, FieldTypes>>
 }
 
 export const $symbol = Symbol('@jogger/field')

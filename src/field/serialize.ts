@@ -1,9 +1,9 @@
 import type { Field } from './field.js'
 
-export const serializeFields: (
-  ...fields: readonly Readonly<Field>[]
-) => string = (...fields) => {
-  const object: Record<string, any> = {}
+export const serializeFields: (...fields: readonly Field[]) => string = (
+  ...fields
+) => {
+  const object: Record<string, unknown> = {}
   for (const field of fields) {
     if (field.name in object) {
       throw new Error(`duplicate field name: \`${field.name}\``)

@@ -137,7 +137,7 @@ interface FileSink {
  *
  * @param options - Sink Options
  */
-export const createFileSink: (options: Options) => Readonly<FileSink & Sink> =
+export const createFileSink: (options: Options) => Readonly<FileSink> & Sink =
   // eslint-disable-next-line complexity
   options => {
     if (!options) {

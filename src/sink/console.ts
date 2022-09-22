@@ -31,9 +31,7 @@ export interface Options {
  *
  * @param options - Sink Options
  */
-export const createConsoleSink: (
-  options?: Options,
-) => Readonly<Sink> = options => {
+export const createConsoleSink: (options?: Options) => Sink = options => {
   const debug = options?.debug ?? false
   const trace = options?.trace ?? false
 
