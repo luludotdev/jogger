@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/prefer-single-boolean-return */
 type PrintFn = (log: string) => void
 
 type SinkMethod = typeof sinkMethods[number]
