@@ -4,7 +4,7 @@
 [![NPM version](https://img.shields.io/npm/v/@lolpants/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@lolpants/jogger)
 [![NPM downloads](https://img.shields.io/npm/dt/@lolpants/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@lolpants/jogger)
 
-> Elegant JSON logging system inspired by [Zap](https://github.com/uber-go/zap)
+> Elegant JSON logging system
 
 ## ⚠️ Warning
 
@@ -18,8 +18,6 @@ Jogger is published to the NPM registry as [`@lolpants/jogger`](https://www.npmj
 
 Jogger splits the logging process up into loggers and sinks. Loggers are responsible for parsing fields and outputting formatted JSON log lines to sinks.
 Sinks are responsible for sending log lines to various outputs (ie: stdout). One logger can have many sinks, and send each log line to all registered sinks. One sink can be used by many loggers. This has the advantage of allowing multiple loggers to access the same resource (eg: file descriptor) simultaneously.
-
-Loggers only accept fields as arguments. Fields are strongly typed and can be any primitive type, an array of primitive types, or sub-fields. Field names must be unique to each object level, top level fields can not use reserved field names (`ts`, `logger`, `level`).
 
 ## 📝 Documentation
 
@@ -39,7 +37,7 @@ const logger = createLogger({
   sink: [consoleSink],
 })
 
-logger.info(field('a', 'b'))
-logger.warn(field('reason', 'http server down'))
-logger.debug(field('object', field('x', true), field('y', false)))
+logger.info({ a: 'b' })
+logger.warn({ reason: 'http server down' })
+logger.debug({ deep: { x: true, y: false } })
 ```
