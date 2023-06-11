@@ -1,7 +1,6 @@
 {
   "name": "@lolpants/jogger",
   "version": "0.8.1",
-  "packageManager": "yarn@3.2.3",
   "description": "Elegant JSON logging system",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,9 +21,9 @@
     "check": "tsc --noEmit --skipLibCheck",
     "lint": "prettier --check . && eslint src --ext ts",
     "format": "prettier --write . && eslint src --ext ts --fix",
-    "fmt": "yarn run format",
-    "test": "yarn run check && yarn run lint",
-    "prepack": "yarn run test && yarn run build"
+    "fmt": "npm run format",
+    "test": "npm run check && npm run lint",
+    "prepack": "npm run test && npm run build"
   },
   "author": "Jack Baron <jackmbaron@gmail.com> (https://www.jackbaron.com)",
   "license": "MIT",
