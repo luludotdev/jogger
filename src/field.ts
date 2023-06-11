@@ -1,19 +1,13 @@
-import type { ReadonlyDeep } from 'type-fest'
-import { z } from 'zod'
+export type Primitive =
+  | Primitive[]
+  | bigint
+  | number
+  | string
+  | { [key: string]: Primitive }
+  | null
 
-const PrimitiveSchema = z
-  .string()
-  .or(z.number())
-  .or(z.bigint())
-  .or(z.boolean())
-  .or(z.null())
-
-const DeepPrimitiveSchema = PrimitiveSchema.or(PrimitiveSchema.array()).or(
-  z.record(z.string(), PrimitiveSchema),
-)
-
-export type Data = ReadonlyDeep<z.infer<typeof DataSchema>>
-export const DataSchema = z.record(z.string(), DeepPrimitiveSchema)
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type Data = { [key: string]: Primitive }
 
 export const serialize = (data: Data): string => {
   return JSON.stringify(data, (_, value: unknown) => {

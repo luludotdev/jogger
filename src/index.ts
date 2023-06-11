@@ -1,4 +1,4 @@
-export type { Data } from './field.js'
+export type { Data, Primitive } from './field.js'
 export { createLogger } from './logger.js'
 export type { Logger } from './logger.js'
 export { createConsoleSink, createFileSink } from './sink/index.js'

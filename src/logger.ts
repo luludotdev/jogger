@@ -1,4 +1,4 @@
-import { DataSchema, serialize } from './field.js'
+import { serialize } from './field.js'
 import type { Data } from './field.js'
 import { isSink } from './sink/index.js'
 import type { Sink } from './sink/index.js'
@@ -49,11 +49,6 @@ export const createLogger: (options: Options) => Logger = options => {
   }
 
   const fn: WrappedLogFn = (level, data) => {
-    const result = DataSchema.safeParse(data)
-    if (!result.success) {
-      throw new TypeError('invalid data', { cause: result.error })
-    }
-
     const defaultData: Data = {
       ts: Date.now(),
       logger: options.name,
@@ -61,7 +56,7 @@ export const createLogger: (options: Options) => Logger = options => {
     }
 
     // TODO: Extra fields
-    const { ts: _, logger: __, level: ___, ...stripped } = result.data
+    const { ts: _, logger: __, level: ___, ...stripped } = data
     const all = { ...defaultData, ...stripped }
     const serialized = serialize(all)
 
