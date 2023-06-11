@@ -8,7 +8,7 @@ const PrimitiveSchema = z
   .or(z.boolean())
   .or(z.null())
 
-const DeepPrimitiveSchema = PrimitiveSchema.or(
+const DeepPrimitiveSchema = PrimitiveSchema.or(PrimitiveSchema.array()).or(
   z.record(z.string(), PrimitiveSchema),
 )
 
