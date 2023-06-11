@@ -1,13 +1,13 @@
-import { field, serializeFields } from './field/index.js'
-import type { Field } from './field/index.js'
+import { DataSchema, serialize } from './field.js'
+import type { Data } from './field.js'
 import { isSink } from './sink/index.js'
 import type { Sink } from './sink/index.js'
 
 type LogLevels = (typeof logLevels)[number]
 const logLevels = ['info', 'debug', 'trace', 'warn', 'error'] as const
 
-type LogFn = (...fields: readonly [Field, ...(readonly Field[])]) => void
-type WrappedLogFn = (level: LogLevels, ...fields: Field[]) => void
+type LogFn = (data: Data) => void
+type WrappedLogFn = (level: LogLevels, data: Data) => void
 
 export type Logger = Readonly<Record<LogLevels, LogFn>>
 
@@ -22,10 +22,10 @@ interface Options {
    */
   sink: Sink | [Sink, ...Sink[]]
 
-  /**
-   * Extra fields to include in all log entries
-   */
-  fields?: Field[]
+  // /**
+  //  * Extra fields to include in all log entries
+  //  */
+  // extra?: Data
 }
 
 /**
@@ -48,18 +48,23 @@ export const createLogger: (options: Options) => Logger = options => {
     }
   }
 
-  const fn: WrappedLogFn = (level, ...fields) => {
-    const defaultFields = [
-      field('ts', Date.now()),
-      field('logger', options.name),
-      field('level', level),
-    ]
+  const fn: WrappedLogFn = (level, data) => {
+    const result = DataSchema.safeParse(data)
+    if (!result.success) {
+      throw new TypeError('invalid data', { cause: result.error })
+    }
 
-    const all = options.fields
-      ? [...defaultFields, ...options.fields, ...fields]
-      : [...defaultFields, ...fields]
+    const defaultData: Data = {
+      ts: Date.now(),
+      logger: options.name,
+      level,
+    }
 
-    const serialized = serializeFields(...all)
+    // TODO: Extra fields
+    const { ts: _, logger: __, level: ___, ...stripped } = result.data
+    const all = { ...defaultData, ...stripped }
+    const serialized = serialize(all)
+
     for (const sink of sinks) {
       switch (level) {
         case 'debug': {
@@ -85,7 +90,7 @@ export const createLogger: (options: Options) => Logger = options => {
   }
 
   const entries = logLevels.map(level => {
-    const logFn = (...fields: readonly Field[]) => fn(level, ...fields)
+    const logFn = (data: Data) => fn(level, data)
     return [level, logFn]
   })
 

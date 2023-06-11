@@ -1,9 +1,5 @@
-export { createField, field, type Field } from './field/index.js'
-export { createLogger, type Logger } from './logger.js'
-export {
-  createConsoleSink,
-  createFileSink,
-  type Sink,
-  type ConsoleSinkOptions,
-  type FileSinkOptions,
-} from './sink/index.js'
+export type { Data } from './field.js'
+export { createLogger } from './logger.js'
+export type { Logger } from './logger.js'
+export { createConsoleSink, createFileSink } from './sink/index.js'
+export type { Sink, ConsoleSinkOptions, FileSinkOptions } from './sink/index.js'
