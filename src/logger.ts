@@ -1,7 +1,9 @@
-import { type Field, field, serializeFields } from './field/index.js'
-import { isSink, type Sink } from './sink/index.js'
+import { field, serializeFields } from './field/index.js'
+import type { Field } from './field/index.js'
+import { isSink } from './sink/index.js'
+import type { Sink } from './sink/index.js'
 
-type LogLevels = typeof logLevels[number]
+type LogLevels = (typeof logLevels)[number]
 const logLevels = ['info', 'debug', 'trace', 'warn', 'error'] as const
 
 type LogFn = (...fields: readonly [Field, ...(readonly Field[])]) => void

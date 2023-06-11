@@ -1,5 +1,7 @@
-import { $symbol, type Field, isField } from './field.js'
-import { isPrimitive, type Primitive } from './primitive.js'
+import { $symbol, isField } from './field.js'
+import type { Field } from './field.js'
+import { isPrimitive } from './primitive.js'
+import type { Primitive } from './primitive.js'
 
 function isArrayOf<T>(arg: unknown[], fn: (x: unknown) => x is T): arg is T[] {
   for (const x of arg) {

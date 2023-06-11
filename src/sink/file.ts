@@ -1,16 +1,12 @@
 import { Buffer } from 'node:buffer'
-import {
-  type WriteStream,
-  createReadStream,
-  createWriteStream,
-  statSync,
-} from 'node:fs'
+import { createReadStream, createWriteStream, statSync } from 'node:fs'
+import type { WriteStream } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { join, parse, posix } from 'node:path'
 import { createGzip } from 'node:zlib'
 import { Mutex } from 'async-mutex'
 import { globby } from 'globby'
-import mkdirp from 'mkdirp'
+import { mkdirp } from 'mkdirp'
 import type { Sink } from './sink.js'
 
 const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (
