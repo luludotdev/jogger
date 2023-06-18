@@ -1,9 +1,9 @@
 import { stderr, stdout } from 'node:process'
-import colorize from 'json-colorizer'
+import colorize from '@pinojs/json-colorizer'
 import type { Sink } from './sink.js'
 
-const writeLine = (line: string, error = false) => {
-  const out = stdout.isTTY ? colorize(line) : line
+const writeLine = (line: string, { color = true, error = false } = {}) => {
+  const out = color ? colorize(line) : line
   const stream = error ? stderr : stdout
 
   stream.write(out)
@@ -11,6 +11,13 @@ const writeLine = (line: string, error = false) => {
 }
 
 export interface Options {
+  /**
+   * Whether to enable colored output if the terminal supports it
+   *
+   * Defaults to `true`
+   */
+  color?: boolean
+
   /**
    * Whether to include `debug` level logs.
    *
@@ -31,7 +38,8 @@ export interface Options {
  *
  * @param options - Sink Options
  */
-export const createConsoleSink: (options?: Options) => Sink = options => {
+export const createConsoleSink = (options?: Options): Sink => {
+  const color = options?.color ?? false
   const debug = options?.debug ?? false
   const trace = options?.trace ?? false
 
@@ -41,17 +49,17 @@ export const createConsoleSink: (options?: Options) => Sink = options => {
     },
 
     error(log) {
-      writeLine(log, true)
+      writeLine(log, { color, error: true })
     },
 
     debug(log) {
       if (debug === false) return
-      writeLine(log)
+      writeLine(log, { color })
     },
 
     trace(log) {
       if (trace === false) return
-      writeLine(log)
+      writeLine(log, { color })
     },
   }
 
