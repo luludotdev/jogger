@@ -1,8 +1,8 @@
 # 🏃 Jogger
 
-![Node.js CI](https://github.com/lolPants/jogger/workflows/Node.js%20CI/badge.svg?branch=master)
-[![NPM version](https://img.shields.io/npm/v/@lolpants/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@lolpants/jogger)
-[![NPM downloads](https://img.shields.io/npm/dt/@lolpants/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@lolpants/jogger)
+![Node.js CI](https://github.com/luludotdev/jogger/workflows/Node.js%20CI/badge.svg?branch=master)
+[![NPM version](https://img.shields.io/npm/v/@luludev/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@luludev/jogger)
+[![NPM downloads](https://img.shields.io/npm/dt/@luludev/jogger.svg?maxAge=3600)](https://www.npmjs.com/package/@luludev/jogger)
 
 > Elegant JSON logging system
 
@@ -12,7 +12,7 @@
 
 ## 💾 Installation
 
-Jogger is published to the NPM registry as [`@lolpants/jogger`](https://www.npmjs.com/package/@lolpants/jogger). Install it with your NPM client of choice.
+Jogger is published to the NPM registry as [`@luludev/jogger`](https://www.npmjs.com/package/@luludev/jogger). Install it with your NPM client of choice.
 
 ## ❓ Concepts
 
@@ -28,7 +28,7 @@ All public methods are documented using JSDoc, your IDE should provide you with 
 Note that by default `debug` and `trace` level logs are discarded. You must manually enable them in each sink's config.
 
 ```ts
-import { createConsoleSink, createLogger, field } from '@lolpants/jogger'
+import { createConsoleSink, createLogger, field } from '@luludev/jogger'
 
 // Enable debug log level
 const consoleSink = createConsoleSink({ debug: true })
