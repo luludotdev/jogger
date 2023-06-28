@@ -1,12 +1,16 @@
 import { Buffer } from 'node:buffer'
-import { createReadStream, createWriteStream, statSync } from 'node:fs'
 import type { WriteStream } from 'node:fs'
+import {
+  createReadStream,
+  createWriteStream,
+  mkdirSync,
+  statSync,
+} from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { join, parse, posix } from 'node:path'
 import { createGzip } from 'node:zlib'
 import { Mutex } from 'async-mutex'
 import { globby } from 'globby'
-import { mkdirp } from 'mkdirp'
 import type { Sink } from './sink.js'
 
 const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (
@@ -145,7 +149,7 @@ export const createFileSink: (
   }
 
   const dirMode = options.dirPermissions ?? 0o755
-  mkdirp.sync(options.directory, { mode: dirMode })
+  mkdirSync(options.directory, { mode: dirMode, recursive: true })
 
   if (typeof options.name !== 'string' || options.name === '') {
     throw new TypeError('file sink name must be a non-empty string')
