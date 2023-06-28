@@ -1,6 +1,7 @@
 export type Primitive =
   | Primitive[]
   | bigint
+  | boolean
   | number
   | string
   | { [key: string]: Primitive }
