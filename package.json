@@ -1,6 +1,6 @@
 {
   "name": "@luludev/jogger",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Elegant JSON logging system",
   "type": "module",
   "main": "./dist/index.js",
