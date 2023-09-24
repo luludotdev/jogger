@@ -39,13 +39,13 @@ export interface Options {
  * @param options - Sink Options
  */
 export const createConsoleSink = (options?: Options): Sink => {
-  const color = options?.color ?? false
+  const color = options?.color ?? true
   const debug = options?.debug ?? false
   const trace = options?.trace ?? false
 
   const sink: Sink = {
     out(log) {
-      writeLine(log)
+      writeLine(log, { color })
     },
 
     error(log) {
