@@ -1,6 +1,6 @@
 import { stderr, stdout } from 'node:process'
 import colorize from '@pinojs/json-colorizer'
-import type { Sink } from './sink.js'
+import type { Sink } from './sink.ts'
 
 const writeLine = (line: string, { color = true, error = false } = {}) => {
   const out = color ? colorize(line) : line

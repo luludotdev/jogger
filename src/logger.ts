@@ -1,7 +1,7 @@
-import { serialize } from './field.js'
-import type { Data } from './field.js'
-import { isSink } from './sink/index.js'
-import type { Sink } from './sink/index.js'
+import { serialize } from './field.ts'
+import type { Data } from './field.ts'
+import { isSink } from './sink/index.ts'
+import type { Sink } from './sink/index.ts'
 
 type LogLevels = (typeof logLevels)[number]
 const logLevels = ['info', 'debug', 'trace', 'warn', 'error'] as const

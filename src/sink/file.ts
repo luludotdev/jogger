@@ -11,7 +11,7 @@ import { join, parse, posix } from 'node:path'
 import { createGzip } from 'node:zlib'
 import { Mutex } from 'async-mutex'
 import { globby } from 'globby'
-import type { Sink } from './sink.js'
+import type { Sink } from './sink.ts'
 
 const isNDaysOld: (target: Date, now: Date, days: number) => boolean = (
   target,
