@@ -16,10 +16,12 @@
 
     // Modules
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
 
     // Emit
+    "noEmit": true,
     "declaration": true,
     "declarationMap": true,
     "importHelpers": true,
