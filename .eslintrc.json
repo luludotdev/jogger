@@ -10,8 +10,5 @@
     "project": "./tsconfig.eslint.json"
   },
   "rules": {},
-  "ignorePatterns": ["**/dist/*"],
-  "env": {
-    "jest": true
-  }
+  "ignorePatterns": ["**/dist/*"]
 }
